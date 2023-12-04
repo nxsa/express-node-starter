@@ -1,15 +1,19 @@
-import cors from "cors";
+import "module-alias/register";
+
 import express from "express";
+import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
-import dotenv from "dotenv";
-import { register } from "tsconfig-paths";
-dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+import { errorHandler } from "./middleware/error.middleware";
+import config from "config";
+//import connectDb from "./utils/db.utils";
+import logger from "./utils/logger.utils";
+import router from "./routes";
 
-const port = process.env.PORT;
+const port = config.get<number>("port");
 
 const app = express();
-register();
+//connectDb.mongoDb();
 
 //Middleware
 app.use(helmet());
@@ -20,10 +24,11 @@ app.use(express.urlencoded({ extended: false }));
 app.disable("x-powered-by");
 
 //Use a prefix for all routes
-const router = express.Router();
-const apiPrefix = "/api";
+const apiPrefix = "/api/v1";
 app.use(apiPrefix, router);
 
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
+app.use(errorHandler);
+
+app.listen(port, async () => {
+  logger.info(`Server started on port ${port}`);
 });

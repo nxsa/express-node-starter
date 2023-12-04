@@ -1,21 +1,18 @@
 import { Request, Response, NextFunction } from "express";
+import logger from "@/utils/logger.utils";
 
-export const errorHandler = async (
-  err: any,
+export const errorHandler = (
+  error: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let statusCode = res.statusCode ? res.statusCode : 500;
-  if (statusCode === 200) {
-    statusCode = 401;
-  }
-  if (err.status === false) {
-    statusCode = 400;
-  }
+  logger.error(error);
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode);
   res.json({
-    message: err.errors || err.message || "Server Error",
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    success: false,
+    message: error.errors || error.message || "Server Error",
+    stack: process.env.NODE_ENV === "production" ? null : error.stack,
   });
 };
